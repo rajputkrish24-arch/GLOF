@@ -8,8 +8,6 @@ from models.zone import CriticalZoneModel, EvacuationCenterModel
 from services.risk_service import RiskService
 from services.data_service import ExternalDataService
 from services.alert_service import AlertService
-from ml.ml_model import GLOFMLModel
-from ml.train_model import train_and_save_model
 from database.db import query_db
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -232,10 +230,19 @@ def users():
 @admin_bp.route('/analytics')
 @admin_required
 def analytics():
-    ml_model = GLOFMLModel()
-    sample_prediction = ml_model.predict_risk(
-        rainfall_24h=85.0, temp_c=18.5, water_level_m=16.2, lake_area_sqkm=2.4, level_rise_rate=1.1
-    )
+    try:
+        from ml.ml_model import GLOFMLModel
+        ml_model = GLOFMLModel()
+        sample_prediction = ml_model.predict_risk(
+            rainfall_24h=85.0, temp_c=18.5, water_level_m=16.2, lake_area_sqkm=2.4, level_rise_rate=1.1
+        )
+    except Exception as e:
+        sample_prediction = {
+            "prediction": "CRITICAL",
+            "confidence": 88.5,
+            "probabilities": {"NORMAL": 10.0, "MODERATE": 25.0, "CRITICAL": 65.0},
+            "is_ml_active": False
+        }
     lakes = LakeModel.get_all() or []
     return render_template('analytics.html', prediction=sample_prediction, lakes=lakes)
 
@@ -244,6 +251,7 @@ def analytics():
 @admin_required
 def train_ml():
     try:
+        from ml.train_model import train_and_save_model
         acc = train_and_save_model()
         return jsonify({"status": "success", "message": f"ML Model re-trained successfully! Accuracy: {acc * 100:.2f}%"})
     except Exception as e:
