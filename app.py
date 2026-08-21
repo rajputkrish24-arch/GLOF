@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, send_from_directory
 from config import Config
 from database.db import init_db
 from models.lake import LakeModel
@@ -18,22 +18,44 @@ from routes.api import api_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Ensure upload directory exists safely
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except Exception as e:
+    print(f"[Uploads Notice] {e}")
 
 # Register Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
-app.register_blueprint(admin_blueprint if 'admin_blueprint' in locals() else admin_bp)
+app.register_blueprint(admin_bp)
 app.register_blueprint(disaster_bp)
 app.register_blueprint(evacuation_bp)
 app.register_blueprint(api_bp)
 
+# Auto-initialize database on application startup / serverless cold-start
+try:
+    init_db()
+except Exception as e:
+    print(f"[Database Auto-Init Notice] {e}")
+
+# Serve dynamic uploads safely
+@app.route('/static/uploads/<path:filename>')
+def custom_uploads_serve(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 # Global context processor for alerts banner & system status
 @app.context_processor
 def inject_global_vars():
-    system_status = RiskService.get_overall_system_status()
-    active_alerts = AlertModel.get_active_alerts() or []
+    try:
+        system_status = RiskService.get_overall_system_status()
+    except Exception:
+        system_status = {"system_level": "NORMAL", "active_warnings": 0, "critical_lakes": 0}
+        
+    try:
+        active_alerts = AlertModel.get_active_alerts() or []
+    except Exception:
+        active_alerts = []
+
     return dict(
         system_status=system_status,
         global_alerts=active_alerts,
@@ -50,10 +72,25 @@ def index():
     """
     Public Landing Page for GLOF Early Warning & Disaster Response System.
     """
-    lakes = LakeModel.get_all() or []
-    status = RiskService.get_overall_system_status()
-    alerts = AlertModel.get_active_alerts() or []
-    weather = ExternalDataService.fetch_imd_weather_data()
+    try:
+        lakes = LakeModel.get_all() or []
+    except Exception:
+        lakes = []
+        
+    try:
+        status = RiskService.get_overall_system_status()
+    except Exception:
+        status = {"system_level": "NORMAL", "active_warnings": 0, "critical_lakes": 0}
+        
+    try:
+        alerts = AlertModel.get_active_alerts() or []
+    except Exception:
+        alerts = []
+        
+    try:
+        weather = ExternalDataService.fetch_imd_weather_data()
+    except Exception:
+        weather = None
     
     return render_template(
         'index.html',
@@ -78,7 +115,5 @@ def contact():
     return render_template('contact.html')
 
 if __name__ == '__main__':
-    print("[GLOF System] Initializing database & seed data...")
-    init_db()
     print("[GLOF System] Starting Flask server on http://127.0.0.1:5000 ...")
     app.run(host='127.0.0.1', port=5000, debug=True)

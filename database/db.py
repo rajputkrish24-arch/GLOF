@@ -82,31 +82,34 @@ def init_db():
     """
     Initializes database schema and seeds initial Himalayan glacial lakes and admin user.
     """
-    conn, db_type = get_db_connection()
-    cursor = conn.cursor()
-    
-    schema_file = os.path.join(os.path.dirname(__file__), "schema.sql")
-    with open(schema_file, "r", encoding="utf-8") as f:
-        schema_sql = f.read()
+    try:
+        conn, db_type = get_db_connection()
+        cursor = conn.cursor()
         
-    if db_type == "SQLITE":
-        # Convert AUTO_INCREMENT for SQLite
-        sqlite_schema = schema_sql.replace("INT AUTO_INCREMENT PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
-        sqlite_schema = sqlite_schema.replace("TINYINT(1)", "INTEGER")
-        sqlite_schema = sqlite_schema.replace("DATETIME DEFAULT CURRENT_TIMESTAMP", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-        cursor.executescript(sqlite_schema)
-        conn.commit()
-    else:
-        statements = schema_sql.split(';')
-        for stmt in statements:
-            if stmt.strip():
-                cursor.execute(stmt)
-        conn.commit()
+        schema_file = os.path.join(os.path.dirname(__file__), "schema.sql")
+        with open(schema_file, "r", encoding="utf-8") as f:
+            schema_sql = f.read()
+            
+        if db_type == "SQLITE":
+            # Convert AUTO_INCREMENT for SQLite
+            sqlite_schema = schema_sql.replace("INT AUTO_INCREMENT PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+            sqlite_schema = sqlite_schema.replace("TINYINT(1)", "INTEGER")
+            sqlite_schema = sqlite_schema.replace("DATETIME DEFAULT CURRENT_TIMESTAMP", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            cursor.executescript(sqlite_schema)
+            conn.commit()
+        else:
+            statements = schema_sql.split(';')
+            for stmt in statements:
+                if stmt.strip():
+                    cursor.execute(stmt)
+            conn.commit()
+            
+        cursor.close()
+        conn.close()
         
-    cursor.close()
-    conn.close()
-    
-    seed_default_data()
+        seed_default_data()
+    except Exception as e:
+        print(f"[DB Initialization Error]: {e}")
 
 
 def seed_default_data():
