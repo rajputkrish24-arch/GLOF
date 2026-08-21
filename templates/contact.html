@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Helpline & Contact Directory — GLOF System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card-gov p-4 shadow-sm mb-4">
+        <h2 class="fw-bold text-dark mb-2"><i class="bi bi-telephone-fill text-danger me-2"></i>Emergency Helplines & Contact Directory</h2>
+        <p class="text-muted small mb-4">Official disaster control room helplines for immediate GLOF outburst assistance and emergency rescue.</p>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded border text-center">
+                    <i class="bi bi-shield-exclamation text-danger display-5"></i>
+                    <h5 class="fw-bold mt-2 text-dark">National Disaster Response Force (NDRF)</h5>
+                    <div class="display-6 fw-bold text-danger my-2">1078</div>
+                    <p class="small text-muted mb-0">Toll-free 24x7 Emergency Control Room</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded border text-center">
+                    <i class="bi bi-hospital text-primary display-5"></i>
+                    <h5 class="fw-bold mt-2 text-dark">State Disaster Management Authority (SDMA)</h5>
+                    <div class="display-6 fw-bold text-primary my-2">1070</div>
+                    <p class="small text-muted mb-0">State Emergency Operation Center</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded border text-center">
+                    <i class="bi bi-telephone-inbound text-success display-5"></i>
+                    <h5 class="fw-bold mt-2 text-dark">Unified Emergency Response</h5>
+                    <div class="display-6 fw-bold text-success my-2">112</div>
+                    <p class="small text-muted mb-0">Police, Ambulance & Fire Integrated Line</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

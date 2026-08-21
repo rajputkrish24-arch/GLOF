@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}System Alerts & Advisories — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') if session.user_id else url_for('index') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('user.alerts') }}"><i class="bi bi-bell-fill"></i> Alerts</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.map_page') }}"><i class="bi bi-map"></i> Risk Map</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.evacuation_page') }}"><i class="bi bi-signpost-split-fill text-warning"></i> Find Safe Route</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Emergency Alerts & Warning Bulletins</h3>
+            <p class="text-muted small mb-0">Official advisories broadcasted by the National Disaster Management Authority (NDMA) & State Disaster Response Teams.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% if alerts %}
+            {% for a in alerts %}
+            <div class="col-md-12">
+                <div class="card-gov border-start border-4 border-{% if a.alert_type == 'CRITICAL' %}danger{% elif a.alert_type == 'WARNING' %}warning{% else %}info{% endif %} shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-exclamation-triangle-fill text-{% if a.alert_type == 'CRITICAL' %}danger{% elif a.alert_type == 'WARNING' %}warning{% else %}info{% endif %} me-2"></i>
+                            {{ a.title }}
+                        </h5>
+                        <span class="badge bg-{% if a.alert_type == 'CRITICAL' %}danger{% elif a.alert_type == 'WARNING' %}warning text-dark{% else %}info{% endif %}">
+                            {{ a.alert_type }}
+                        </span>
+                    </div>
+                    <p class="text-secondary mb-2">{{ a.message }}</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i> Issued at: {{ a.created_at }}</small>
+                        <a href="{{ url_for('evacuation.evacuation_page') }}" class="btn btn-sm btn-outline-danger">
+                            Check Safe Evacuation Routes <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-success text-center py-4">
+                    <i class="bi bi-check-circle-fill display-5 d-block mb-2 text-success"></i>
+                    No active emergency alerts. All monitored glacial basins are currently within safe parameters.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

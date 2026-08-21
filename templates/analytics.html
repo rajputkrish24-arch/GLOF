@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}ML & Historical Analytics — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up text-info"></i> ML & Analytics</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Machine Learning Pipeline & Outburst Prediction Model</h3>
+            <p class="text-muted small mb-0">RandomForest Classifier predicting GLOF outburst probability based on multi-dimensional telemetry (Rainfall, Temp, Water Level Rise Rate, Surface Area Expansion).</p>
+        </div>
+        <button id="train-ml-btn" class="btn btn-primary font-weight-bold" onclick="triggerMLTraining()">
+            <i class="bi bi-cpu me-1"></i> Re-Train ML Model
+        </button>
+    </div>
+
+    <!-- Live ML Pipeline Status -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card-gov h-100 shadow-sm border-start border-4 border-info">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-robot me-2 text-info"></i>Sample ML Prediction Pipeline Output</span>
+                    <span class="badge bg-success">ML Model Active</span>
+                </div>
+                <p class="text-muted small">Testing inference with current extreme high-altitude conditions (Rainfall: 85mm, Level Rise Rate: 1.1m/day):</p>
+                
+                <div class="p-3 bg-light rounded mb-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-dark">Predicted Outburst Risk:</span>
+                        <span class="badge-status badge-{{ prediction.prediction.lower() }} fs-6">
+                            {{ prediction.prediction }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Model Confidence Score:</span>
+                        <strong class="text-primary">{{ prediction.confidence }}%</strong>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-dark fs-6 mb-2">Class Probability Distribution:</h6>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>NORMAL Risk</span>
+                        <span>{{ prediction.probabilities.NORMAL }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ prediction.probabilities.NORMAL }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>MODERATE Risk</span>
+                        <span>{{ prediction.probabilities.MODERATE }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ prediction.probabilities.MODERATE }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>CRITICAL Risk</span>
+                        <span>{{ prediction.probabilities.CRITICAL }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: {{ prediction.probabilities.CRITICAL }}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card-gov h-100 shadow-sm">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-diagram-3-fill me-2 text-primary"></i>ML Architecture & Feature Weight Importances</span>
+                </div>
+                <p class="text-muted small mb-3">Model features evaluated during GLOF classification training:</p>
+
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>1. Water Level Rise Rate (m/day)</span>
+                        <strong class="text-danger">Weight: 35%</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>2. 24-Hour Precipitation (mm)</span>
+                        <strong class="text-warning">Weight: 25%</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>3. Surface Storage Area Expansion (sq km)</span>
+                        <strong class="text-primary">Weight: 20%</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>4. Ambient Air Temperature / Melt Factor</span>
+                        <strong class="text-info">Weight: 15%</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span>5. Baseline Bathymetric Water Level</span>
+                        <strong class="text-secondary">Weight: 5%</strong>
+                    </li>
+                </ul>
+
+                <div class="alert alert-info mt-3 py-2 small mb-0">
+                    <i class="bi bi-info-circle me-1"></i> <strong>ML Note:</strong> Trained using Scikit-Learn <code>RandomForestClassifier</code> with serialized artifact <code>glof_model.pkl</code>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function triggerMLTraining() {
+    const btn = document.getElementById("train-ml-btn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Training Pipeline...';
+
+    fetch('/admin/train-ml', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(err => {
+            alert("Failed to execute ML training pipeline.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cpu me-1"></i> Re-Train ML Model';
+        });
+}
+</script>
+{% endblock %}

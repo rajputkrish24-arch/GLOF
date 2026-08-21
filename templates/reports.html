@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Disaster Reports Verification — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('disaster.admin_reports') }}"><i class="bi bi-flag-fill text-danger"></i> Disaster Reports</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Disaster Report Verification Panel</h3>
+            <p class="text-muted small mb-0">Review user field reports, verify disaster incidents, issue admin responses, and convert serious reports into active hazard perimeters.</p>
+        </div>
+    </div>
+
+    <div class="card-gov">
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Reporter</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ r.report_id }}</td>
+                        <td>{{ r.user_name }}<br><small class="text-muted">{{ r.phone }}</small></td>
+                        <td>{{ r.location }}</td>
+                        <td><strong>{{ r.disaster_type }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if r.severity in ['High', 'Critical'] %}danger{% else %}warning text-dark{% endif %}">
+                                {{ r.severity }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ r.created_at }}</small></td>
+                        <td>
+                            <span class="badge bg-{% if r.status == 'Verified' %}success{% elif r.status == 'Resolved' %}info{% elif r.status == 'Rejected' %}danger{% else %}secondary{% endif %} px-2 py-1">
+                                {{ r.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary py-0" data-bs-toggle="modal" data-bs-target="#verifyModal{{ r.report_id }}">Review Report</button>
+                        </td>
+                    </tr>
+
+                    <!-- Review & Action Modal -->
+                    <div class="modal fade" id="verifyModal{{ r.report_id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <form action="{{ url_for('disaster.admin_reports') }}" method="POST">
+                                    <input type="hidden" name="report_id" value="{{ r.report_id }}">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title fw-bold">Disaster Report: {{ r.report_id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <small class="text-muted d-block">Reporter Details:</small>
+                                                <strong>{{ r.user_name }}</strong> ({{ r.phone }})
+                                            </div>
+                                            <div class="col-md-6">
+                                                <small class="text-muted d-block">Incident Type & Severity:</small>
+                                                <span class="badge bg-danger">{{ r.disaster_type }}</span> — <span class="fw-bold text-danger">{{ r.severity }} Severity</span>
+                                            </div>
+                                            <div class="col-12">
+                                                <small class="text-muted d-block">Location Coordinates:</small>
+                                                <strong>{{ r.location }}</strong> (Lat: {{ r.latitude }}, Lng: {{ r.longitude }})
+                                            </div>
+                                            <div class="col-12">
+                                                <small class="text-muted d-block">Description:</small>
+                                                <p class="p-2 bg-light rounded border text-dark">{{ r.description }}</p>
+                                            </div>
+                                            {% if r.image_url %}
+                                            <div class="col-12">
+                                                <small class="text-muted d-block mb-1">Attached Photo Evidence:</small>
+                                                <img src="{{ r.image_url }}" alt="Evidence Image" class="img-fluid rounded border" style="max-height: 250px;">
+                                            </div>
+                                            {% endif %}
+
+                                            <hr>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Update Verification Status</label>
+                                                <select name="status" class="form-select">
+                                                    <option value="Under Review" {% if r.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                                                    <option value="Verified" {% if r.status == 'Verified' %}selected{% endif %}>Verified (Confirmed Incident)</option>
+                                                    <option value="Resolved" {% if r.status == 'Resolved' %}selected{% endif %}>Resolved (Cleared)</option>
+                                                    <option value="Rejected" {% if r.status == 'Rejected' %}selected{% endif %}>Rejected (False Alarm)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-check mt-4">
+                                                    <input class="form-check-input" type="checkbox" name="make_critical_zone" value="1" id="criticalCheck{{ r.report_id }}">
+                                                    <label class="form-check-label fw-bold text-danger" for="criticalCheck{{ r.report_id }}">
+                                                        Convert Location to Active Critical Danger Zone (2km Radius)
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold">Official Admin Response to Reporter</label>
+                                                <textarea name="admin_response" class="form-control" rows="2" placeholder="e.g. SDRF unit dispatched. Emergency evacuation in progress.">{{ r.admin_response or '' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary font-weight-bold">Save Report Status Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

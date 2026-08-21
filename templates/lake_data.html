@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Glacier Lake Data Management — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.rainfall') }}"><i class="bi bi-cloud-rain font-weight-bold"></i> Rainfall Monitoring</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.temperature') }}"><i class="bi bi-thermometer-half"></i> Temperature Data</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.risk_management') }}"><i class="bi bi-sliders"></i> Risk Management</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.admin_reports') }}"><i class="bi bi-flag-fill text-danger"></i> Disaster Reports</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Glacier Lake Data Management</h3>
+            <p class="text-muted small mb-0">Add, edit, delete, or synchronize telemetry data for monitored Himalayan glacial basins.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success font-weight-bold" data-bs-toggle="modal" data-bs-target="#addLakeModal">
+                <i class="bi bi-plus-circle me-1"></i> Add Monitored Lake
+            </button>
+            <form action="{{ url_for('admin.lake_data') }}" method="POST">
+                <input type="hidden" name="action" value="refresh_external">
+                <button type="submit" class="btn btn-outline-primary font-weight-bold">
+                    <i class="bi bi-arrow-repeat me-1"></i> Fetch Real API Data (IMD/SACHET)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lakes Table -->
+    <div class="card-gov">
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Lake Name</th>
+                        <th>Location</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Area (sq km)</th>
+                        <th>Level (m)</th>
+                        <th>Temp (°C)</th>
+                        <th>Rain (mm)</th>
+                        <th>Current Risk</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lakes %}
+                    <tr>
+                        <td>#{{ l.id }}</td>
+                        <td class="fw-bold text-primary">{{ l.lake_name }}</td>
+                        <td><small>{{ l.location }}</small></td>
+                        <td>{{ l.latitude }}</td>
+                        <td>{{ l.longitude }}</td>
+                        <td>{{ l.lake_area_sqkm }}</td>
+                        <td>{{ l.water_level_m }}</td>
+                        <td>{{ l.temperature_c }}</td>
+                        <td>{{ l.rainfall_mm }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ l.current_risk.lower() }}">
+                                {{ l.current_risk }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ l.last_updated }}</small></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#editLakeModal{{ l.id }}">Edit</button>
+                                <form action="{{ url_for('admin.lake_data') }}" method="POST" class="d-inline" onsubmit="return confirm('Delete lake entry?');">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="lake_id" value="{{ l.id }}">
+                                    <button type="submit" class="btn btn-outline-danger py-0">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Modal -->
+                    <div class="modal fade" id="editLakeModal{{ l.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ url_for('admin.lake_data') }}" method="POST">
+                                    <input type="hidden" name="action" value="edit">
+                                    <input type="hidden" name="lake_id" value="{{ l.id }}">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title fw-bold">Edit Telemetry: {{ l.lake_name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <label class="form-label fw-semibold">Surface Area (sq km)</label>
+                                                <input type="number" step="0.01" name="lake_area_sqkm" class="form-control" value="{{ l.lake_area_sqkm }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label fw-semibold">Water Level (m)</label>
+                                                <input type="number" step="0.01" name="water_level_m" class="form-control" value="{{ l.water_level_m }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label fw-semibold">Temperature (°C)</label>
+                                                <input type="number" step="0.1" name="temperature_c" class="form-control" value="{{ l.temperature_c }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label fw-semibold">Rainfall (mm)</label>
+                                                <input type="number" step="0.1" name="rainfall_mm" class="form-control" value="{{ l.rainfall_mm }}" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold">Risk Classification</label>
+                                                <select name="current_risk" class="form-select">
+                                                    <option value="NORMAL" {% if l.current_risk == 'NORMAL' %}selected{% endif %}>NORMAL (Green)</option>
+                                                    <option value="MODERATE" {% if l.current_risk == 'MODERATE' %}selected{% endif %}>MODERATE (Yellow)</option>
+                                                    <option value="CRITICAL" {% if l.current_risk == 'CRITICAL' %}selected{% endif %}>CRITICAL (Red)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary fw-bold">Save Telemetry Updates</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Lake Modal -->
+<div class="modal fade" id="addLakeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('admin.lake_data') }}" method="POST">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Add New Monitored Glacial Lake</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Lake Name *</label>
+                            <input type="text" name="lake_name" class="form-control" placeholder="e.g. Imja Tsho Lake" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Location / District *</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Chamoli, Uttarakhand" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Latitude *</label>
+                            <input type="number" step="any" name="latitude" class="form-control" value="30.7380" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Longitude *</label>
+                            <input type="number" step="any" name="longitude" class="form-control" value="79.0620" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Area (sq km)</label>
+                            <input type="number" step="0.01" name="lake_area_sqkm" class="form-control" value="1.5" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Water Level (m)</label>
+                            <input type="number" step="0.01" name="water_level_m" class="form-control" value="12.0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Temp (°C)</label>
+                            <input type="number" step="0.1" name="temperature_c" class="form-control" value="14.0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Rainfall (mm)</label>
+                            <input type="number" step="0.1" name="rainfall_mm" class="form-control" value="15.0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success fw-bold">Create Monitored Lake Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

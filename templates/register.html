@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Register — GLOF Command Portal{% endblock %}
+
+{% block content %}
+<!-- Background Glacier Video Loop -->
+<video class="auth-video-bg" autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-glacier-river-aerial-view-41223-large.mp4" type="video/mp4">
+</video>
+
+<div class="container py-4 d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="col-md-9 col-lg-7">
+        <div class="auth-overlay-card p-4 shadow-lg text-light">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-plus-fill text-info display-5"></i>
+                <h3 class="fw-bold mt-2 text-white">User Account Registration</h3>
+                <p class="text-muted small">Register to report disasters, receive GLOF outburst alerts, and compute safe evacuation routes.</p>
+            </div>
+
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Full Name *</label>
+                        <input type="text" name="full_name" class="form-control bg-dark text-light border-secondary" placeholder="e.g. Ramesh Kumar" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address *</label>
+                        <input type="email" name="email" class="form-control bg-dark text-light border-secondary" placeholder="user@domain.com" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone Number *</label>
+                        <input type="tel" name="phone" class="form-control bg-dark text-light border-secondary" placeholder="+91 9876543210" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Password *</label>
+                        <input type="password" name="password" class="form-control bg-dark text-light border-secondary" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Confirm Password *</label>
+                        <input type="password" name="confirm_password" class="form-control bg-dark text-light border-secondary" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Primary Location / Region</label>
+                        <input type="text" name="location" class="form-control bg-dark text-light border-secondary" placeholder="e.g. Kedarnath Valley, Rudraprayag">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-gov-primary w-100 py-2 fw-bold mt-4 text-white fs-6">Create Account</button>
+            </form>
+
+            <div class="text-center mt-3 small text-muted">
+                Already registered? <a href="{{ url_for('auth.login') }}" class="fw-bold text-info">Sign In Here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

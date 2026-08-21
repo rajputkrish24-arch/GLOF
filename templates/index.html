@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}GLOF Early Warning & Disaster Response System{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2">
+    <!-- Hero Glacier Command Card -->
+    <div class="hero-glacier-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="live-feed-badge mb-2"><i class="bi bi-broadcast me-1"></i> LIVE FEED ACTIVE</span>
+                <h1 class="fw-extrabold text-white display-6 mb-2">GLOF Early Warning & Disaster Response System</h1>
+                <p class="text-light opacity-75 fs-6 mb-4" style="max-width: 680px;">
+                    Real-time monitoring of glacial lakes for early risk detection and safer evacuation across the Himalayan region.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('user.lake_conditions') if session.user_id else url_for('auth.login') }}" class="btn btn-info px-4 py-2 text-white fw-bold">
+                        <i class="bi bi-card-checklist me-1"></i> View Current Risk
+                    </a>
+                    <a href="{{ url_for('disaster.report_disaster') if session.user_id else url_for('auth.login') }}" class="btn btn-danger px-4 py-2 fw-bold">
+                        <i class="bi bi-megaphone-fill me-1"></i> Report Disaster
+                    </a>
+                    <a href="{{ url_for('evacuation.evacuation_page') }}" class="btn btn-outline-light px-4 py-2 fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i> Find Safe Route
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center mt-4 mt-lg-0">
+                <div class="p-3 bg-dark bg-opacity-75 rounded-3 border border-secondary shadow-lg">
+                    <small class="text-muted text-uppercase fw-bold letter-spacing-1" style="font-size:0.75rem;">OVERALL SYSTEM HAZARD LEVEL</small>
+                    <div class="my-2">
+                        <h1 class="fw-black display-4 mb-0 text-{{ status.badge_class }} text-shadow">
+                            {{ status.system_status }}
+                        </h1>
+                    </div>
+                    <div class="text-muted small mt-2 d-flex flex-column gap-1" style="font-size:0.75rem;">
+                        <span><i class="bi bi-clock-history me-1"></i> Data Source: {{ weather.source or 'IMD Mausam (Live)' }}</span>
+                        <span><i class="bi bi-check2-circle text-success me-1"></i> Last Updated: Just now</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">MONITORED LAKES</div>
+                <div class="metric-value text-cyan">{{ status.total_lakes }}</div>
+                <small class="text-muted"><i class="bi bi-water me-1"></i> Active Stations</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">NORMAL LAKES</div>
+                <div class="metric-value text-success">{{ status.normal_lakes }}</div>
+                <small class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Safe Status</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">MODERATE RISK</div>
+                <div class="metric-value text-warning">{{ status.moderate_lakes }}</div>
+                <small class="text-warning fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Advisory</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">CRITICAL LAKES</div>
+                <div class="metric-value text-danger">{{ status.critical_lakes }}</div>
+                <small class="text-danger fw-bold"><i class="bi bi-exclamation-octagon-fill me-1"></i> Outburst Warning</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">DISASTER REPORTS</div>
+                <div class="metric-value text-light">{{ status.active_reports }}</div>
+                <small class="text-muted"><i class="bi bi-flag-fill me-1"></i> Pending Verification</small>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="metric-card">
+                <div class="metric-label">RAINFALL (24H)</div>
+                <div class="metric-value text-info">{{ weather.rainfall_24h_mm or 52.4 }} <small class="fs-6">mm</small></div>
+                <small class="text-muted"><i class="bi bi-cloud-rain-fill me-1"></i> Regional Avg</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Tables & Widgets -->
+    <div class="row g-4">
+        <!-- Monitored Lakes Table -->
+        <div class="col-lg-7">
+            <div class="card-gov h-100">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-table me-2 text-cyan"></i>MONITORED GLACIAL LAKES OVERVIEW</span>
+                    <a href="{{ url_for('evacuation.map_page') }}" class="btn btn-sm btn-outline-info py-0" style="font-size:0.75rem;">
+                        <i class="bi bi-fullscreen me-1"></i> Full Screen Map
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-gov">
+                        <thead>
+                            <tr>
+                                <th>Lake Name</th>
+                                <th>Location</th>
+                                <th>Water Level (m)</th>
+                                <th>Temp (°C)</th>
+                                <th>Rainfall (mm/24h)</th>
+                                <th>Current Risk</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lake in lakes %}
+                            <tr>
+                                <td class="fw-bold text-light">{{ lake.lake_name }}</td>
+                                <td><small class="text-muted">{{ lake.location }}</small></td>
+                                <td>{{ lake.water_level_m }}</td>
+                                <td>{{ lake.temperature_c }}</td>
+                                <td>{{ lake.rainfall_mm }}</td>
+                                <td>
+                                    <span class="badge-status badge-{{ lake.current_risk.lower() }}">
+                                        {{ lake.current_risk }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('user.lake_details', lake_id=lake.id) if session.user_id else url_for('auth.login') }}" class="text-info fw-bold text-decoration-none small">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center text-muted small mt-2" style="font-size:0.75rem;">
+                    <i class="bi bi-arrow-repeat me-1"></i> Auto-refresh in 30s
+                </div>
+            </div>
+        </div>
+
+        <!-- Environmental Integration & Heatmap Widget -->
+        <div class="col-lg-5">
+            <!-- Environmental Telemetry Box -->
+            <div class="card-gov mb-4">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-thermometer-sun me-2 text-warning"></i>ENVIRONMENTAL DATA INTEGRATION</span>
+                    <span class="badge bg-success py-1 px-2" style="font-size:0.65rem;">LIVE</span>
+                </div>
+                <p class="text-muted small mb-3">Live telemetry from NDMA SACHET & IMD Mausam Data Layer</p>
+
+                <div class="row g-2 text-center">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 bg-dark rounded border border-secondary">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Temperature</small>
+                            <strong class="text-warning fs-6">1.6°C</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 bg-dark rounded border border-secondary">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Wind Speed</small>
+                            <strong class="text-info fs-6">12 km/h</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 bg-dark rounded border border-secondary">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Humidity</small>
+                            <strong class="text-cyan fs-6">85%</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 bg-dark rounded border border-secondary">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Visibility</small>
+                            <strong class="text-light fs-6">8.2 km</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap Visualization Widget -->
+            <div class="card-gov">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-fire me-2 text-danger"></i>LAKE RISK HEATMAP</span>
+                    <div class="d-flex align-items-center gap-1 small text-muted" style="font-size:0.7rem;">
+                        <span>Low</span>
+                        <div style="width: 80px; height: 8px; background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); border-radius: 4px;"></div>
+                        <span>High</span>
+                    </div>
+                </div>
+                <div id="heatmap-preview-map" class="map-container-box" style="height: 200px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const heatMap = initGLOFMap('heatmap-preview-map', 28.0, 85.0, 5);
+    const lakes = {{ lakes|tojson }};
+    addLakesToMap(heatMap, lakes);
+});
+</script>
+{% endblock %}

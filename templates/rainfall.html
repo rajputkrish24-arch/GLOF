@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Rainfall Monitoring — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.rainfall') }}"><i class="bi bi-cloud-rain font-weight-bold"></i> Rainfall Monitoring</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.temperature') }}"><i class="bi bi-thermometer-half"></i> Temperature Data</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Dedicated Regional Rainfall Monitoring</h3>
+            <p class="text-muted small mb-0">Precipitation telemetry from IMD Mausam & automated rain gauges across high-altitude Himalayan catchments.</p>
+        </div>
+        <a href="{{ url_for('admin.settings') }}" class="btn btn-outline-primary fw-bold">
+            <i class="bi bi-sliders me-1"></i> Configure Warning Thresholds
+        </a>
+    </div>
+
+    <!-- Rainfall KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Current 24h Gauge</div>
+                <div class="metric-value text-info">{{ weather.rainfall_24h_mm or 52.4 }} <small class="fs-6">mm</small></div>
+                <small class="text-muted">Daily Precipitation</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">7-Day Cumulative</div>
+                <div class="metric-value text-primary">{{ weather.rainfall_weekly_mm or 184.2 }} <small class="fs-6">mm</small></div>
+                <small class="text-muted">Weekly Total</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">30-Day Monthly Total</div>
+                <div class="metric-value text-dark">{{ weather.rainfall_monthly_mm or 410.0 }} <small class="fs-6">mm</small></div>
+                <small class="text-muted">Monthly Volume</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Warning Status</div>
+                <div class="metric-value text-warning fs-3">MODERATE</div>
+                <small class="text-warning font-weight-bold">Threshold Exceeded</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rainfall Graph -->
+    <div class="card-gov mb-4">
+        <div class="card-title-gov">
+            <span><i class="bi bi-bar-chart-line-fill me-2 text-info"></i>7-Day Regional Rainfall Trend (Chart.js)</span>
+        </div>
+        <div style="height: 320px;">
+            <canvas id="rainfall-trend-chart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById("rainfall-trend-chart");
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Rainfall (mm)',
+                    data: [35, 65, 80, 45, 20, 15, 10],
+                    backgroundColor: 'rgba(2, 132, 199, 0.6)',
+                    borderColor: '#0284c7',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Precipitation (mm)' } } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

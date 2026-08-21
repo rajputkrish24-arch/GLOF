@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.settings') }}"><i class="bi bi-gear"></i> System Settings</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">System Configuration & Data Thresholds</h3>
+            <p class="text-muted small mb-0">Configure warning trigger parameters, data source modes (Live vs Demo), and external API parameters.</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-gov p-4 shadow-sm">
+                <form action="{{ url_for('admin.settings') }}" method="POST">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-primary me-2"></i>GLOF Risk Calculation Thresholds</h5>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Rainfall Moderate Threshold (mm)</label>
+                            <input type="number" step="0.1" name="rain_mod" class="form-control" value="{{ config.RAINFALL_MODERATE_MM }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Rainfall Critical Threshold (mm)</label>
+                            <input type="number" step="0.1" name="rain_crit" class="form-control" value="{{ config.RAINFALL_CRITICAL_MM }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Temperature Moderate Threshold (°C)</label>
+                            <input type="number" step="0.1" name="temp_mod" class="form-control" value="{{ config.TEMP_MODERATE_C }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Temperature Critical Threshold (°C)</label>
+                            <input type="number" step="0.1" name="temp_crit" class="form-control" value="{{ config.TEMP_CRITICAL_C }}" required>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-down-fill text-info me-2"></i>External Data Service Settings</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Data Integration Mode</label>
+                        <select name="data_mode" class="form-select">
+                            <option value="LIVE_WITH_FALLBACK" {% if config.DATA_MODE == 'LIVE_WITH_FALLBACK' %}selected{% endif %}>Live API Fetching with Automatic Baseline Fallback (Recommended)</option>
+                            <option value="DEMO_MODE" {% if config.DATA_MODE == 'DEMO_MODE' %}selected{% endif %}>Demo Mode (Cached Baseline Data Only)</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-light rounded text-muted small mb-4">
+                        <strong>Configured Data Sources:</strong><br>
+                        • NDMA SACHET: <code>{{ config.SACHET_API_URL }}</code><br>
+                        • IMD Mausam API: <code>{{ config.IMD_API_URL }}</code>
+                    </div>
+
+                    <button type="submit" class="btn btn-gov-primary font-weight-bold px-4 py-2">
+                        Save System Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

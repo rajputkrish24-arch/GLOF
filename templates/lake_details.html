@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lake.lake_name }} Analytics — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('user.lake_conditions') }}"><i class="bi bi-water"></i> Lake Conditions</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.map_page') }}"><i class="bi bi-map"></i> Risk Map</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.report_disaster') }}"><i class="bi bi-megaphone-fill text-danger"></i> Report Disaster</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.evacuation_page') }}"><i class="bi bi-signpost-split-fill text-warning"></i> Find Safe Route</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ url_for('user.lake_conditions') }}" class="btn btn-sm btn-outline-secondary mb-2"><i class="bi bi-arrow-left me-1"></i> Back to Lakes</a>
+            <h3 class="fw-bold text-dark mb-1">{{ lake.lake_name }}</h3>
+            <p class="text-muted small mb-0"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ lake.location }} (Lat: {{ lake.latitude }}, Lng: {{ lake.longitude }})</p>
+        </div>
+        <div>
+            <span class="badge-status badge-{{ lake.current_risk.lower() }} fs-6 px-3 py-2">
+                CURRENT RISK: {{ lake.current_risk }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Current Metrics Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Water Level</div>
+                <div class="metric-value text-primary">{{ lake.water_level_m }} <small class="fs-6">m</small></div>
+                <small class="text-muted"><i class="bi bi-arrow-up-right me-1"></i> Gauge Height</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Surface Area</div>
+                <div class="metric-value text-dark">{{ lake.lake_area_sqkm }} <small class="fs-6">sq km</small></div>
+                <small class="text-muted"><i class="bi bi-arrows-angle-expand me-1"></i> Basin Volume</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Temperature</div>
+                <div class="metric-value text-warning">{{ lake.temperature_c }} <small class="fs-6">°C</small></div>
+                <small class="text-muted"><i class="bi bi-thermometer-half me-1"></i> Ambient Temp</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Precipitation</div>
+                <div class="metric-value text-info">{{ lake.rainfall_mm }} <small class="fs-6">mm</small></div>
+                <small class="text-muted"><i class="bi bi-cloud-rain me-1"></i> 24h Rain Gauge</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Map & Chart side-by-side -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card-gov h-100">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Environmental Trends Over Time (Chart.js)</span>
+                </div>
+                <div style="height: 380px; position: relative;">
+                    <canvas id="lake-history-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card-gov h-100">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-geo-alt me-2 text-danger"></i>Lake Basin Map Location</span>
+                </div>
+                <div id="single-lake-map" class="map-container-box" style="height: 380px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Measurements Table & Risk Logs -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card-gov">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-clock-history me-2 text-secondary"></i>Historical Measurement Logs</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-gov">
+                        <thead>
+                            <tr>
+                                <th>Recorded At</th>
+                                <th>Water Level (m)</th>
+                                <th>Area (sq km)</th>
+                                <th>Temp (°C)</th>
+                                <th>Rainfall (mm)</th>
+                                <th>Risk State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in history %}
+                            <tr>
+                                <td><small class="text-muted">{{ h.recorded_at }}</small></td>
+                                <td>{{ h.water_level_m }}</td>
+                                <td>{{ h.lake_area_sqkm }}</td>
+                                <td>{{ h.temperature_c }}</td>
+                                <td>{{ h.rainfall_mm }}</td>
+                                <td>
+                                    <span class="badge-status badge-{{ h.risk_level.lower() }}">
+                                        {{ h.risk_level }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-gov">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-journal-text me-2 text-warning"></i>Risk Level Audit Trail</span>
+                </div>
+                {% if risk_history %}
+                    <ul class="list-group list-group-flush small">
+                        {% for rh in risk_history %}
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ rh.previous_risk }} → {{ rh.new_risk }}</strong>
+                                <small class="text-muted">{{ rh.changed_at }}</small>
+                            </div>
+                            <small class="text-muted d-block">Reason: {{ rh.reason }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small mb-0">No manual risk overrides logged for this lake.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Initialize Leaflet Map for single lake
+    const lakeMap = initGLOFMap('single-lake-map', {{ lake.latitude }}, {{ lake.longitude }}, 11);
+    addLakesToMap(lakeMap, [{{ lake|tojson }}]);
+
+    // 2. Initialize Chart.js with historical telemetry
+    const historyData = {{ history|tojson }};
+    const labels = historyData.map(h => h.recorded_at ? h.recorded_at.split(' ')[0] : '');
+    const levels = historyData.map(h => h.water_level_m);
+    const temps = historyData.map(h => h.temperature_c);
+    const rainfalls = historyData.map(h => h.rainfall_mm);
+
+    renderLakeHistoryChart('lake-history-chart', labels, levels, temps, rainfalls);
+});
+</script>
+{% endblock %}

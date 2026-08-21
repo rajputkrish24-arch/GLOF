@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Find Safe Evacuation Route — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') if session.user_id else url_for('index') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('evacuation.evacuation_page') }}"><i class="bi bi-signpost-split-fill text-warning"></i> Find Safe Route</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.map_page') }}"><i class="bi bi-map"></i> Risk Map</a></li>
+        {% if session.user_id %}
+            <li class="sidebar-item"><a href="{{ url_for('disaster.report_disaster') }}"><i class="bi bi-megaphone-fill text-danger"></i> Report Disaster</a></li>
+            <li class="sidebar-item"><a href="{{ url_for('user.alerts') }}"><i class="bi bi-bell-fill"></i> Alerts</a></li>
+        {% endif %}
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Safe Evacuation Route Recommendation Engine</h3>
+            <p class="text-muted small mb-0">Multi-path safety score calculation evaluating rainfall, glacial outburst zones, landslide reports, and critical hazard perimeters.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Input Panel & Candidate Route Cards -->
+        <div class="col-lg-5">
+            <!-- Route Selector Form -->
+            <div class="card-gov mb-4 shadow-sm">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-compass-fill me-2 text-primary"></i>Evacuation Query</span>
+                </div>
+
+                <form id="evacuation-route-form">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Current Location (Origin)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt-fill text-danger"></i></span>
+                            <input type="text" id="origin-input" class="form-control" value="Kedarnath Valley" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Safe Destination / Relief Shelter</label>
+                        <select id="destination-input" class="form-select" required>
+                            {% for c in centers %}
+                            <option value="{{ c.name }}" {% if loop.first %}selected{% endif %}>{{ c.name }} (Capacity: {{ c.capacity }})</option>
+                            {% endfor %}
+                            <option value="Rudraprayag Safe Relief Hub">Rudraprayag Safe Relief Hub</option>
+                            <option value="Manali Safe Transit Camp">Manali Safe Transit Camp</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-gov-primary w-100 py-2 font-weight-bold">
+                        <i class="bi bi-cpu-fill me-1"></i> Calculate Safe Routes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="route-loading-spinner" class="text-center py-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted small mt-2">Computing hazard risk scores across road network waypoints...</p>
+            </div>
+
+            <!-- Results Container -->
+            <div id="route-results-container" style="display: none;">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-layers-half me-2 text-warning"></i>Available Candidate Routes Comparison</h6>
+                <div id="route-cards-list"></div>
+            </div>
+        </div>
+
+        <!-- Interactive Map Visualizer -->
+        <div class="col-lg-7">
+            <div class="card-gov h-100 shadow-sm">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-map-fill me-2 text-success"></i>Interactive Evacuation Hazard Map</span>
+                </div>
+                <div id="evacuation-map" class="map-container-box" style="height: 540px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Initialize Leaflet Map
+    window.evacMap = initGLOFMap('evacuation-map', 30.7350, 79.0650, 11);
+    
+    // Add default lakes & evacuation centers to map
+    const lakes = {{ lakes|tojson }};
+    const centers = {{ centers|tojson }};
+    addLakesToMap(window.evacMap, lakes);
+    addEvacuationCentersToMap(window.evacMap, centers);
+
+    // 2. Trigger initial route calculation
+    calculateRoutes();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Report a Disaster — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.lake_conditions') }}"><i class="bi bi-water"></i> Lake Conditions</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.map_page') }}"><i class="bi bi-map"></i> Risk Map</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('disaster.report_disaster') }}"><i class="bi bi-megaphone-fill text-danger"></i> Report Disaster</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.evacuation_page') }}"><i class="bi bi-signpost-split-fill text-warning"></i> Find Safe Route</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.report_history') }}"><i class="bi bi-clock-history"></i> My Reports</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card-gov p-4 shadow">
+                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                    <i class="bi bi-megaphone-fill text-danger display-5"></i>
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0">Report a Disaster Situation</h3>
+                        <p class="text-muted small mb-0">Submit immediate disaster reports (GLOF outburst, heavy rainfall, landslide, road blockage). Reports are verified by Admin and integrated into the evacuation safety map.</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('disaster.report_disaster') }}" method="POST" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Reporter Name *</label>
+                            <input type="text" name="user_name" class="form-control" value="{{ session.user_name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contact Phone *</label>
+                            <input type="tel" name="phone" class="form-control" placeholder="+91 9876543210" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Current Location / Landmark *</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Kedarnath Temple Valley / NH-58 Kilometer 12" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Latitude (GPS)</label>
+                            <input type="number" step="any" name="latitude" id="lat-input" class="form-control" value="30.7350">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Longitude (GPS)</label>
+                            <input type="number" step="any" name="longitude" id="lng-input" class="form-control" value="79.0650">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Disaster Type *</label>
+                            <select name="disaster_type" class="form-select" required>
+                                <option value="Glacial Lake Outburst">Glacial Lake Outburst (GLOF)</option>
+                                <option value="Flood" selected>Flood / Flash Flood</option>
+                                <option value="Landslide">Landslide / Mudslide</option>
+                                <option value="Heavy Rainfall">Heavy Rainfall / Cloudburst</option>
+                                <option value="Road Blockage">Road Blockage / Bridge Collapse</option>
+                                <option value="Dam/Lake Overflow">Dam / Lake Overflow</option>
+                                <option value="Other">Other Emergency</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Severity Level *</label>
+                            <select name="severity" class="form-select" required>
+                                <option value="Low">Low — Caution Advisory</option>
+                                <option value="Medium" selected>Medium — Moderate Threat</option>
+                                <option value="High">High — Severe Danger</option>
+                                <option value="Critical">Critical — Extreme Outburst / Evacuation Needed</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Detailed Description of Situation *</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Describe the water level surge, road damage, rainfall intensity, or visible lake breach..." required></textarea>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Upload Photo Evidence (Optional)</label>
+                            <input type="file" name="image" class="form-control" accept="image/*">
+                            <small class="text-muted">Supported formats: JPG, PNG, GIF, WEBP</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary" onclick="detectGPSLocation()">
+                            <i class="bi bi-geo-alt-fill me-1"></i> Detect Current GPS Coordinates
+                        </button>
+                        <button type="submit" class="btn btn-danger font-weight-bold px-4 py-2">
+                            <i class="bi bi-send-fill me-1"></i> Submit Disaster Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function detectGPSLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            document.getElementById("lat-input").value = pos.coords.latitude.toFixed(6);
+            document.getElementById("lng-input").value = pos.coords.longitude.toFixed(6);
+            alert("GPS location successfully detected!");
+        }, function(err) {
+            alert("Geolocation detection unavailable. Standard coordinates preserved.");
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Evacuation Shelters Management — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.evacuation_management') }}"><i class="bi bi-signpost-split text-success"></i> Evacuation Mgmt</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Evacuation Shelter & Relief Hub Management</h3>
+            <p class="text-muted small mb-0">Configure safe destination shelters, maximum capacities, and emergency helpline contact numbers.</p>
+        </div>
+        <button class="btn btn-success font-weight-bold" data-bs-toggle="modal" data-bs-target="#addCenterModal">
+            <i class="bi bi-plus-circle me-1"></i> Add Relief Shelter
+        </button>
+    </div>
+
+    <div class="card-gov">
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Shelter Name</th>
+                        <th>Location</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Capacity</th>
+                        <th>Contact Phone</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in centers %}
+                    <tr>
+                        <td>#{{ c.id }}</td>
+                        <td class="fw-bold text-success">{{ c.name }}</td>
+                        <td>{{ c.location }}</td>
+                        <td>{{ c.latitude }}</td>
+                        <td>{{ c.longitude }}</td>
+                        <td><strong>{{ c.capacity }} people</strong></td>
+                        <td>{{ c.contact_phone }}</td>
+                        <td>
+                            <form action="{{ url_for('admin.evacuation_management') }}" method="POST" class="d-inline" onsubmit="return confirm('Delete shelter entry?');">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="center_id" value="{{ c.id }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm py-0">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Center Modal -->
+<div class="modal fade" id="addCenterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('admin.evacuation_management') }}" method="POST">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Add Safe Relief Shelter</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Shelter Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Joshimath Relief Transit Base" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Location Address *</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Higher Grounds, Joshimath" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Latitude *</label>
+                            <input type="number" step="any" name="latitude" class="form-control" value="30.5500" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Longitude *</label>
+                            <input type="number" step="any" name="longitude" class="form-control" value="79.5600" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Capacity (Persons) *</label>
+                            <input type="number" name="capacity" class="form-control" value="1000" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Contact Phone</label>
+                            <input type="text" name="phone" class="form-control" placeholder="+91 135 2740003">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success fw-bold">Save Relief Shelter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.lake_conditions') }}"><i class="bi bi-water"></i> Lake Conditions</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('user.profile') }}"><i class="bi bi-person-gear"></i> Profile</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card-gov p-4 shadow">
+                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                    <i class="bi bi-person-circle display-5 text-primary"></i>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-dark">User Account Profile</h4>
+                        <small class="text-muted">Role: <span class="badge bg-secondary">{{ user.role }}</span></small>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('user.profile') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email Address (Read-only)</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ user.phone }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Location / Base Region</label>
+                            <input type="text" name="location" class="form-control" value="{{ user.location or '' }}" placeholder="e.g. Kedarnath Valley">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gov-primary mt-4 font-weight-bold px-4">
+                        Save Profile Updates
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

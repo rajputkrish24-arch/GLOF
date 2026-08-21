@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}About the Project — GLOF Early Warning System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card-gov p-4 shadow-sm mb-4">
+        <h2 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>About the GLOF Early Warning & Safe Evacuation System</h2>
+        <p class="lead fs-6 text-secondary">
+            Glacial Lake Outburst Floods (GLOFs) present a grave natural hazard across high-altitude mountain basins in the Himalayas. Sudden breaches of moraine dams can discharge millions of cubic meters of water, destroying downstream infrastructure, settlements, and lives.
+        </p>
+
+        <hr class="my-4">
+
+        <h4 class="fw-bold text-dark mb-3">Core System Features & Architecture</h4>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <h5 class="fw-bold text-primary"><i class="bi bi-activity me-2"></i>1. Glacial Basin Telemetry</h5>
+                    <p class="small text-muted mb-0">Continuously monitors water levels, surface expansion area, precipitation, and ambient melt temperatures for critical Himalayan lakes (e.g. Chorabari Lake, South Lhonak Lake, Imja Tsho).</p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <h5 class="fw-bold text-success"><i class="bi bi-signpost-split me-2"></i>2. Evacuation Safety Algorithm</h5>
+                    <p class="small text-muted mb-0">Calculates multi-path route risk scores (0–100) factoring in flood zones, road blockages, active disaster reports, and critical perimeters to recommend the safest evacuation corridor.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <h5 class="fw-bold text-danger"><i class="bi bi-megaphone me-2"></i>3. User Incident Reporting</h5>
+                    <p class="small text-muted mb-0">Empowers field users and citizens to submit verified disaster reports (cloudbursts, landslides, road damage) with GPS coordinates and optional photo evidence.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <h5 class="fw-bold text-warning"><i class="bi bi-cpu me-2"></i>4. Machine Learning Classification</h5>
+                    <p class="small text-muted mb-0">RandomForest Classifier predictive engine trained on multi-parameter environmental features to evaluate GLOF outburst probability.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

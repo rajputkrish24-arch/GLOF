@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard — GLOF Early Warning System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <div class="px-3 mb-3 text-center border-bottom border-secondary pb-3">
+        <h6 class="text-white fw-bold mb-0"><i class="bi bi-person-badge me-2"></i>User Portal</h6>
+        <small class="text-muted">{{ session.user_location or "Kedarnath Region" }}</small>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-item active"><a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.lake_conditions') }}"><i class="bi bi-water"></i> Lake Conditions</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.map_page') }}"><i class="bi bi-map"></i> Risk Map</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.report_disaster') }}"><i class="bi bi-megaphone-fill text-danger"></i> Report Disaster</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('evacuation.evacuation_page') }}"><i class="bi bi-signpost-split-fill text-warning"></i> Find Safe Route</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.alerts') }}"><i class="bi bi-bell-fill"></i> Alerts</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.report_history') }}"><i class="bi bi-clock-history"></i> My Reports</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.profile') }}"><i class="bi bi-person-gear"></i> Profile</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('auth.logout') }}" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">User Control Center</h3>
+            <p class="text-muted small mb-0">Welcome back, <strong>{{ session.user_name }}</strong>! Monitoring real-time environmental risk parameters.</p>
+        </div>
+        <a href="{{ url_for('disaster.report_disaster') }}" class="btn btn-danger font-weight-bold py-2 px-3">
+            <i class="bi bi-plus-circle me-1"></i> Report Emergency
+        </a>
+    </div>
+
+    <!-- Current Disaster Status Banner -->
+    <div class="card-gov border-start border-4 border-{{ status.badge_class }} mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <small class="text-uppercase text-muted font-monospace fw-bold">CURRENT REGIONAL DISASTER STATUS</small>
+                <div class="d-flex align-items-center gap-3 my-2">
+                    <h2 class="fw-bold mb-0 text-dark">SYSTEM STATUS</h2>
+                    <span class="badge-status badge-{{ status.badge_class }} fs-5 px-4 py-2">
+                        {{ status.system_status }}
+                    </span>
+                </div>
+                <p class="text-secondary small mb-0">
+                    Calculated from {{ status.total_lakes }} Himalayan glacial lakes and active weather telemetry.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('evacuation.evacuation_page') }}" class="btn btn-warning fw-bold text-dark px-3 py-2">
+                    <i class="bi bi-shield-check me-1"></i> Evacuate via Safe Route
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Cards Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Current Rainfall</div>
+                <div class="metric-value text-info">{{ weather.rainfall_24h_mm or 52.4 }} <small class="fs-6">mm</small></div>
+                <small class="text-muted"><i class="bi bi-cloud-rain me-1"></i> 24h Gauge</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Current Temp</div>
+                <div class="metric-value text-warning">{{ weather.temperature_c or 15.8 }} <small class="fs-6">°C</small></div>
+                <small class="text-muted"><i class="bi bi-thermometer-half me-1"></i> Regional Temp</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Monitored Lakes</div>
+                <div class="metric-value text-primary">{{ lakes|length }}</div>
+                <small class="text-muted"><i class="bi bi-water me-1"></i> Glacial Basins</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Active Alerts</div>
+                <div class="metric-value text-danger">{{ alerts|length }}</div>
+                <small class="text-muted"><i class="bi bi-bell-fill me-1"></i> Emergency Notices</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitored Lakes Summary -->
+    <div class="card-gov mb-4">
+        <div class="card-title-gov">
+            <span><i class="bi bi-water text-primary me-2"></i>Monitored Lakes Status</span>
+            <a href="{{ url_for('user.lake_conditions') }}" class="btn btn-sm btn-outline-primary">View All Lakes</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>Lake Name</th>
+                        <th>Location</th>
+                        <th>Water Level (m)</th>
+                        <th>Area (sq km)</th>
+                        <th>Temp (°C)</th>
+                        <th>Rainfall (mm)</th>
+                        <th>Risk Level</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lake in lakes %}
+                    <tr>
+                        <td class="fw-bold">{{ lake.lake_name }}</td>
+                        <td><small class="text-muted">{{ lake.location }}</small></td>
+                        <td>{{ lake.water_level_m }}</td>
+                        <td>{{ lake.lake_area_sqkm }}</td>
+                        <td>{{ lake.temperature_c }}</td>
+                        <td>{{ lake.rainfall_mm }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ lake.current_risk.lower() }}">
+                                {{ lake.current_risk }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('user.lake_details', lake_id=lake.id) }}" class="btn btn-sm btn-primary py-0 px-2" style="font-size:0.8rem;">
+                                View Analytics
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- User Recent Reports -->
+    <div class="card-gov">
+        <div class="card-title-gov">
+            <span><i class="bi bi-clock-history me-2 text-secondary"></i>My Recent Disaster Reports</span>
+            <a href="{{ url_for('disaster.report_history') }}" class="btn btn-sm btn-outline-secondary">View History</a>
+        </div>
+        {% if user_reports %}
+            <div class="table-responsive">
+                <table class="table-gov">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in user_reports %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ r.report_id }}</td>
+                            <td><small>{{ r.created_at }}</small></td>
+                            <td>{{ r.location }}</td>
+                            <td>{{ r.disaster_type }}</td>
+                            <td>
+                                <span class="badge bg-{% if r.severity in ['High', 'Critical'] %}danger{% else %}warning text-dark{% endif %}">
+                                    {{ r.severity }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ r.status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted small mb-0 py-2">You have not submitted any disaster reports yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control Center — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <div class="px-3 mb-3 text-center border-bottom border-secondary pb-3">
+        <h6 class="text-white fw-bold mb-0"><i class="bi bi-shield-lock-fill text-warning me-2"></i>ADMIN CONTROL CENTER</h6>
+        <small class="text-warning font-monospace">Authorized Operator</small>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-item active"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.rainfall') }}"><i class="bi bi-cloud-rain font-weight-bold"></i> Rainfall Monitoring</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.temperature') }}"><i class="bi bi-thermometer-half"></i> Temperature Data</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.risk_management') }}"><i class="bi bi-sliders"></i> Risk Management</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.admin_reports') }}"><i class="bi bi-flag-fill text-danger"></i> Disaster Reports</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.critical_zones') }}"><i class="bi bi-exclamation-octagon text-danger"></i> Critical Zones</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.evacuation_management') }}"><i class="bi bi-signpost-split text-success"></i> Evacuation Mgmt</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.alerts_admin') }}"><i class="bi bi-megaphone"></i> Broadcast Alerts</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Users</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up text-info"></i> ML & Analytics</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.settings') }}"><i class="bi bi-gear"></i> System Settings</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('auth.logout') }}" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Admin Command Dashboard</h3>
+            <p class="text-muted small mb-0">System-wide monitoring, GLOF risk overrides, disaster report verification, and critical danger zone perimeters.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="{{ url_for('admin.lake_data') }}" method="POST">
+                <input type="hidden" name="action" value="refresh_external">
+                <button type="submit" class="btn btn-outline-primary font-weight-bold">
+                    <i class="bi bi-arrow-repeat me-1"></i> Sync NDMA / IMD Telemetry
+                </button>
+            </form>
+            <a href="{{ url_for('admin.risk_management') }}" class="btn btn-danger font-weight-bold">
+                <i class="bi bi-shield-slash me-1"></i> Risk Override
+            </a>
+        </div>
+    </div>
+
+    <!-- System KPIs Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Total Lakes</div>
+                <div class="metric-value text-primary">{{ lakes|length }}</div>
+                <small class="text-muted">Monitored Basins</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Normal Lakes</div>
+                <div class="metric-value text-success">{{ status.normal_lakes }}</div>
+                <small class="text-success fw-bold">Safe State</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Moderate Lakes</div>
+                <div class="metric-value text-warning">{{ status.moderate_lakes }}</div>
+                <small class="text-warning fw-bold">Watch Advisory</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Critical Lakes</div>
+                <div class="metric-value text-danger">{{ status.critical_lakes }}</div>
+                <small class="text-danger fw-bold">Outburst Warning</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Disaster Reports</div>
+                <div class="metric-value text-secondary">{{ reports|length }}</div>
+                <small class="text-muted">Field Reports</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Registered Users</div>
+                <div class="metric-value text-info">{{ total_users }}</div>
+                <small class="text-muted">Active Accounts</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lakes Management Table -->
+    <div class="card-gov mb-4">
+        <div class="card-title-gov">
+            <span><i class="bi bi-database me-2 text-primary"></i>Glacial Lakes System Telemetry</span>
+            <a href="{{ url_for('admin.lake_data') }}" class="btn btn-sm btn-primary">Manage Lakes</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Lake Name</th>
+                        <th>Location</th>
+                        <th>Water Level</th>
+                        <th>Lake Area</th>
+                        <th>Temp</th>
+                        <th>Rainfall</th>
+                        <th>Current Risk</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lakes %}
+                    <tr>
+                        <td>#{{ l.id }}</td>
+                        <td class="fw-bold">{{ l.lake_name }}</td>
+                        <td><small class="text-muted">{{ l.location }}</small></td>
+                        <td>{{ l.water_level_m }} m</td>
+                        <td>{{ l.lake_area_sqkm }} sq km</td>
+                        <td>{{ l.temperature_c }} °C</td>
+                        <td>{{ l.rainfall_mm }} mm</td>
+                        <td>
+                            <span class="badge-status badge-{{ l.current_risk.lower() }}">
+                                {{ l.current_risk }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ l.last_updated }}</small></td>
+                        <td>
+                            <a href="{{ url_for('admin.risk_management') }}" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;">
+                                Override Risk
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Active Field Reports for Verification -->
+    <div class="card-gov">
+        <div class="card-title-gov">
+            <span><i class="bi bi-flag-fill me-2 text-danger"></i>User Submitted Disaster Reports (Verification Queue)</span>
+            <a href="{{ url_for('disaster.admin_reports') }}" class="btn btn-sm btn-danger">Open Verification Panel</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Reporter</th>
+                        <th>Location</th>
+                        <th>Disaster Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports[:5] %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ r.report_id }}</td>
+                        <td>{{ r.user_name }} ({{ r.phone }})</td>
+                        <td>{{ r.location }}</td>
+                        <td>{{ r.disaster_type }}</td>
+                        <td>
+                            <span class="badge bg-{% if r.severity in ['High', 'Critical'] %}danger{% else %}warning text-dark{% endif %}">
+                                {{ r.severity }}
+                            </span>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ r.status }}</span></td>
+                        <td><small class="text-muted">{{ r.created_at }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

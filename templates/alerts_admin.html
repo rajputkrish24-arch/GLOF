@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Broadcast System Alerts — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.alerts_admin') }}"><i class="bi bi-megaphone"></i> Broadcast Alerts</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Broadcast Emergency Alerts</h3>
+            <p class="text-muted small mb-0">Dispatch official system-wide alert banners and advisories to all registered users and public visitors.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card-gov shadow-sm">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-send-fill text-danger me-2"></i>Issue New Emergency Alert</span>
+                </div>
+                <form action="{{ url_for('admin.alerts_admin') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Alert Title *</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. CRITICAL OUTBURST WARNING" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Alert Level Category *</label>
+                        <select name="alert_type" class="form-select" required>
+                            <option value="CRITICAL" selected>CRITICAL — Red Emergency Outburst Alert</option>
+                            <option value="WARNING">WARNING — Yellow Advisory Notice</option>
+                            <option value="INFO">INFO — Informational Bulletin</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Associated Lake (Optional)</label>
+                        <select name="lake_id" class="form-select">
+                            <option value="">None (Regional General Alert)</option>
+                            {% for l in lakes %}
+                            <option value="{{ l.id }}">{{ l.lake_name }} ({{ l.current_risk }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Message Content *</label>
+                        <textarea name="message" class="form-control" rows="4" placeholder="Detail evacuation instructions, rainfall warning, or river valley caution..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 py-2 font-weight-bold">
+                        <i class="bi bi-broadcast me-1"></i> Broadcast Alert Instantly
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card-gov shadow-sm">
+                <div class="card-title-gov">
+                    <span><i class="bi bi-list-stars text-primary me-2"></i>Active Broadcasted Alerts Feed</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-gov">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Associated Lake</th>
+                                <th>Message Snippet</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in alerts %}
+                            <tr>
+                                <td><small class="text-muted">{{ a.created_at }}</small></td>
+                                <td class="fw-bold text-dark">{{ a.title }}</td>
+                                <td>
+                                    <span class="badge bg-{% if a.alert_type == 'CRITICAL' %}danger{% elif a.alert_type == 'WARNING' %}warning text-dark{% else %}info{% endif %}">
+                                        {{ a.alert_type }}
+                                    </span>
+                                </td>
+                                <td>{{ a.lake_name or 'Regional' }}</td>
+                                <td><small class="text-muted">{{ a.message[:60] }}...</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

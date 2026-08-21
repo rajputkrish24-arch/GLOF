@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}My Report History — GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('user.lake_conditions') }}"><i class="bi bi-water"></i> Lake Conditions</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('disaster.report_disaster') }}"><i class="bi bi-megaphone-fill text-danger"></i> Report Disaster</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('disaster.report_history') }}"><i class="bi bi-clock-history"></i> My Reports</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">My Submitted Disaster Reports</h3>
+            <p class="text-muted small mb-0">Track verification status, admin responses, and risk elevation updates for your submitted field reports.</p>
+        </div>
+        <a href="{{ url_for('disaster.report_disaster') }}" class="btn btn-danger font-weight-bold">
+            <i class="bi bi-plus-circle me-1"></i> New Report
+        </a>
+    </div>
+
+    <div class="card-gov">
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Submitted Date</th>
+                        <th>Location</th>
+                        <th>Disaster Type</th>
+                        <th>Severity</th>
+                        <th>Verification Status</th>
+                        <th>Admin Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if reports %}
+                        {% for r in reports %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ r.report_id }}</td>
+                            <td><small class="text-muted">{{ r.created_at }}</small></td>
+                            <td>{{ r.location }}</td>
+                            <td><strong class="text-dark">{{ r.disaster_type }}</strong></td>
+                            <td>
+                                <span class="badge bg-{% if r.severity in ['High', 'Critical'] %}danger{% else %}warning text-dark{% endif %}">
+                                    {{ r.severity }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if r.status == 'Verified' %}success{% elif r.status == 'Resolved' %}info{% elif r.status == 'Rejected' %}danger{% else %}secondary{% endif %} px-3 py-1">
+                                    {{ r.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if r.admin_response %}
+                                    <small class="text-success fw-semibold"><i class="bi bi-chat-left-text me-1"></i> {{ r.admin_response }}</small>
+                                {% else %}
+                                    <small class="text-muted italic">Pending Review...</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No reports submitted yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

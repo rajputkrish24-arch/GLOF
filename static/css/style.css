@@ -1,0 +1,353 @@
+/* GLOF Early Warning & Disaster Response System — Dark Command Center Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-dark: #090d16;
+    --bg-card: #111827;
+    --bg-card-hover: #1f2937;
+    --bg-sidebar: #0b1120;
+    --border-dark: #1f293d;
+    --border-glow: #2d3e5f;
+    
+    --text-bright: #f8fafc;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    
+    --accent-blue: #0284c7;
+    --accent-cyan: #06b6d4;
+    
+    /* GLOF Disaster Risk Colors */
+    --color-safe: #10b981;
+    --color-safe-bg: rgba(16, 185, 129, 0.15);
+    --color-safe-border: rgba(16, 185, 129, 0.4);
+    
+    --color-moderate: #f59e0b;
+    --color-moderate-bg: rgba(245, 158, 11, 0.15);
+    --color-moderate-border: rgba(245, 158, 11, 0.4);
+    
+    --color-critical: #ef4444;
+    --color-critical-bg: rgba(239, 68, 68, 0.2);
+    --color-critical-border: rgba(239, 68, 68, 0.6);
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Header & Top Navigation Bar */
+.navbar-gov {
+    background-color: #060a12;
+    border-bottom: 1px solid var(--border-dark);
+    padding: 0.75rem 1.5rem;
+}
+
+.navbar-brand-gov {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: 0.5px;
+}
+
+.nav-link-gov {
+    color: #94a3b8 !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.2s;
+}
+
+.nav-link-gov:hover, .nav-link-gov.active {
+    color: #38bdf8 !important;
+}
+
+/* Alert Ticker Bar */
+.alert-ticker-bar {
+    background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%);
+    color: #ffffff;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #b91c1c;
+}
+
+/* Layout & Sidebar */
+.layout-container {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar-gov {
+    width: 250px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-dark);
+    color: #ffffff;
+    min-height: calc(100vh - 65px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+}
+
+.sidebar-item a:hover, .sidebar-item.active a {
+    color: #ffffff;
+    background-color: #162032;
+    border-left: 3px solid #38bdf8;
+}
+
+.sidebar-camera-widget {
+    background-color: #0d1527;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    margin: 15px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.camera-preview-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Hero Section Glacier Card */
+.hero-glacier-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(11, 17, 32, 0.9) 100%), 
+                url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    border: 1px solid var(--border-glow);
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.live-feed-badge {
+    background-color: rgba(16, 185, 129, 0.2);
+    border: 1px solid var(--color-safe);
+    color: var(--color-safe);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.live-feed-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-safe);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Cards & Containers */
+.card-gov {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-title-gov {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.metric-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.metric-card:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-2px);
+}
+
+.metric-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0.4rem 0;
+}
+
+.metric-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.badge-normal, .badge-safe, .badge-success {
+    background-color: var(--color-safe-bg);
+    color: var(--color-safe);
+    border: 1px solid var(--color-safe-border);
+}
+
+.badge-moderate, .badge-warning {
+    background-color: var(--color-moderate-bg);
+    color: var(--color-moderate);
+    border: 1px solid var(--color-moderate-border);
+}
+
+.badge-critical, .badge-danger {
+    background-color: var(--color-critical-bg);
+    color: var(--color-critical);
+    border: 1px solid var(--color-critical-border);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Tables */
+.table-gov {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-main);
+}
+
+.table-gov th {
+    background-color: #0b1120;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-dark);
+}
+
+.table-gov td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-dark);
+    font-size: 0.88rem;
+}
+
+.table-gov tr:hover {
+    background-color: var(--bg-card-hover);
+}
+
+/* Map Box */
+.map-container-box {
+    width: 100%;
+    height: 480px;
+    border-radius: 8px;
+    border: 1px solid var(--border-dark);
+    overflow: hidden;
+}
+
+/* Auth Video Background Overlay */
+.auth-video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 0;
+    filter: brightness(0.4) contrast(1.1);
+}
+
+.auth-overlay-card {
+    position: relative;
+    z-index: 10;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    border-radius: 12px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 1.5rem 2rem;
+}
+
+.footer-gov {
+    background-color: #060a12;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-dark);
+    padding: 1rem 0;
+    font-size: 0.8rem;
+}
+
+.btn-gov-primary {
+    background-color: #0284c7;
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+}
+
+.btn-gov-primary:hover {
+    background-color: #0369a1;
+    color: #ffffff;
+}

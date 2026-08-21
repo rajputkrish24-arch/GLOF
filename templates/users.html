@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Registered Users — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Users</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Registered User Directory</h3>
+            <p class="text-muted small mb-0">Role-based user permissions management (USER vs ADMIN).</p>
+        </div>
+    </div>
+
+    <div class="card-gov">
+        <div class="table-responsive">
+            <table class="table-gov">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Email Address</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Location</th>
+                        <th>Joined Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>#{{ u.id }}</td>
+                        <td class="fw-bold text-dark">{{ u.full_name }}</td>
+                        <td><code>{{ u.email }}</code></td>
+                        <td>{{ u.phone }}</td>
+                        <td>
+                            <span class="badge bg-{% if u.role == 'ADMIN' %}danger{% else %}primary{% endif %}">
+                                {{ u.role }}
+                            </span>
+                        </td>
+                        <td>{{ u.location or 'N/A' }}</td>
+                        <td><small class="text-muted">{{ u.created_at }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

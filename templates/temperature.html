@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Temperature Monitoring — Admin GLOF System{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar-gov">
+    <ul class="sidebar-nav">
+        <li class="sidebar-item"><a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer"></i> Dashboard</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.lake_data') }}"><i class="bi bi-database"></i> Glacier Lake Data</a></li>
+        <li class="sidebar-item"><a href="{{ url_for('admin.rainfall') }}"><i class="bi bi-cloud-rain font-weight-bold"></i> Rainfall Monitoring</a></li>
+        <li class="sidebar-item active"><a href="{{ url_for('admin.temperature') }}"><i class="bi bi-thermometer-half"></i> Temperature Data</a></li>
+    </ul>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Temperature Telemetry & Accelerated Melt Tracking</h3>
+            <p class="text-muted small mb-0">High ambient temperatures accelerate glacial meltwater inflow into moraine-dammed lakes, increasing outburst flood risk.</p>
+        </div>
+    </div>
+
+    <!-- Temperature KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Current Ambient Temp</div>
+                <div class="metric-value text-warning">{{ weather.temperature_c or 15.8 }} <small class="fs-6">°C</small></div>
+                <small class="text-muted">High Altitude Station</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">24h Minimum Temp</div>
+                <div class="metric-value text-primary">{{ weather.min_temp_c or 8.2 }} <small class="fs-6">°C</small></div>
+                <small class="text-muted">Nighttime Min</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">24h Maximum Temp</div>
+                <div class="metric-value text-danger">{{ weather.max_temp_c or 22.4 }} <small class="fs-6">°C</small></div>
+                <small class="text-muted">Daytime Peak</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card shadow-sm border-0">
+                <div class="metric-label">Melt Acceleration Index</div>
+                <div class="metric-value text-warning fs-3">ELEVATED</div>
+                <small class="text-warning font-weight-bold">Rapid Runoff Active</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Temperature Graph -->
+    <div class="card-gov">
+        <div class="card-title-gov">
+            <span><i class="bi bi-graph-up me-2 text-warning"></i>Historical Temperature Curve (Chart.js)</span>
+        </div>
+        <div style="height: 320px;">
+            <canvas id="temperature-trend-chart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById("temperature-trend-chart");
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [14, 16, 17, 15, 13, 12, 11],
+                    borderColor: '#d97706',
+                    backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                    borderWidth: 3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Temperature (°C)' } } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
